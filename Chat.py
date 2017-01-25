@@ -2,8 +2,18 @@
 import json
 import random
 class ChatRob:
-	def __init__(self,JsonData):
-		self.MainData = json.loads(JsonData)
+	def __init__(self,JsonDataURL="JsonData.json"):
+		self.DataURL = JsonDataURL;
+		
+		self.MainData = self.LoadJson(JsonDataURL)
+
+	def LoadJson(self,JsonDataUrl):
+		#read json file 
+		f = open(JsonDataUrl, 'r')
+		b_str = f.read()
+		f.close()
+		return json.loads(b_str)
+		
 	def All(self):
 		# print all key and data
 		for key, value in self.MainData.iteritems():
@@ -17,6 +27,7 @@ class ChatRob:
 		for Nkey, value in NewData.iteritems():
 		    # if found fail,would break
 		    if tooken == 0:
+			print "error"
 			break
 		    target = Nkey
 		    for Okey in self.MainData.iteritems():
@@ -45,7 +56,9 @@ class ChatRob:
 					NewData+='",'
 				else:
 					NewData+= '"'+key+'":"'+self.MainData[key]+'",'
-			NewData += '"coder":"theta"}'
+			# delete extra ","
+			NewData =NewData[0:len(NewData)-1]+'}'
+
 			text_file = open("JsonData.json", "w")
 			text_file.write(NewData.encode('utf8'))
 	def listen(self):
@@ -65,17 +78,14 @@ class ChatRob:
 
 		
 	
-#read json file 
-f = open("JsonData.json", 'r')
-b_str = f.read()
-f.close()
+
 
 #create ChatRob
-T = ChatRob(b_str)
+T = ChatRob()
 T.All()
-T.Learn('{"最近還好嗎":"不好"}')
-T.All()
-T.Learn('{"北七123":"吃屎"}')
+#T.Learn('{"你好":"你好"}')
+#T.All()
+T.Learn('{"北七13":"吃屎"}')
 T.All()
 #T.Learn('{"乖乖":"閉嘴"}')
 #T.All()
