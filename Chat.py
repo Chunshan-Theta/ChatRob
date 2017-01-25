@@ -10,21 +10,42 @@ class ChatRob:
 		    print key+": ",self.MainData[key]
 		    
 		print str(len(self.MainData))
-        def Learn(self,JsonData):
-		# conbine two array
-
+	def Learn(self,JsonData):
 		NewData = json.loads(JsonData)
-		self.MainData = dict(NewData.items() + self.MainData.items())
+		tooken = 1
+		# alert common key
+		for Nkey, value in NewData.iteritems():
+		    if tooken == 0:
+			break
+		    target = Nkey
+		    for Okey in self.MainData.iteritems():
+			if target == Okey:
+				print "error"
+				tooken = 0
+				break
+			
+		if tooken == 1:
+			# conbine two array
+			self.MainData = dict(NewData.items() + self.MainData.items())
 
-		#updata json data
-		NewData = "{"
-		for key, value in self.MainData.iteritems():
-		    NewData+= '"'+key+'":"'+self.MainData[key]+'",'
-		NewData += '"coder":"theta"}'
-		text_file = open("JsonData.json", "w")
-		text_file.write(NewData.encode('utf8'))
-
-		text_file.close()
+			#updata json data
+			NewData = "{"
+			for key, value in self.MainData.iteritems():
+				# if type of data is list ,would run this
+				if type(self.MainData[key])==list:
+					NewData+='"'+key+'":"'
+					NewData+="["
+					for i in range(len(self.MainData[key])):
+						if i != 0: 
+							NewData+=","
+						NewData+=str(self.MainData[key][i])
+					NewData+="]"
+					NewData+='",'
+				else:
+					NewData+= '"'+key+'":"'+self.MainData[key]+'",'
+			NewData += '"coder":"theta"}'
+			text_file = open("JsonData.json", "w")
+			text_file.write(NewData.encode('utf8'))
 	def listen(self):
 		ask = "ask"
 		while ask != "close":
@@ -50,13 +71,13 @@ f.close()
 #create ChatRob
 T = ChatRob(b_str)
 T.All()
-#T.Learn('{"安安":"哈摟"}')
-#T.All()
-#T.Learn('{"北七":"吃屎"}')
-#T.All()
+T.Learn('{"最近還好嗎":"不好"}')
+T.All()
+T.Learn('{"北七123":"吃屎"}')
+T.All()
 #T.Learn('{"乖乖":"閉嘴"}')
 #T.All()
-T.listen()
+#T.listen()
 
 
  
