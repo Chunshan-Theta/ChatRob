@@ -15,10 +15,12 @@ class ChatRob:
 		tooken = 1
 		# alert common key
 		for Nkey, value in NewData.iteritems():
+		    # if found fail,would break
 		    if tooken == 0:
 			break
 		    target = Nkey
 		    for Okey in self.MainData.iteritems():
+			# if found common Key ,would break
 			if target == Okey:
 				print "error"
 				tooken = 0
