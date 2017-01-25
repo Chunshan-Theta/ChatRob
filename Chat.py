@@ -19,7 +19,7 @@ class ChatRob:
 		for key, value in self.MainData.iteritems():
 		    print key+": ",self.MainData[key]
 		    
-		print str(len(self.MainData))
+		print "len: ",str(len(self.MainData))
 	def Learn(self,JsonData):
 		NewData = json.loads(JsonData)
 		tooken = 1
@@ -35,7 +35,6 @@ class ChatRob:
 			if target == Okey:
 				print "error"
 				tooken = 0
-				break
 			
 		if tooken == 1:
 			# conbine two array
@@ -46,14 +45,14 @@ class ChatRob:
 			for key, value in self.MainData.iteritems():
 				# if type of data is list ,would run this
 				if type(self.MainData[key])==list:
-					NewData+='"'+key+'":"'
-					NewData+="["
+					NewData+='"'+key+'":'
+					NewData+='["'
 					for i in range(len(self.MainData[key])):
 						if i != 0: 
-							NewData+=","
-						NewData+=str(self.MainData[key][i])
-					NewData+="]"
-					NewData+='",'
+							NewData+='","'
+						NewData+=self.MainData[key][i]
+					NewData+='"]'
+					NewData+=','
 				else:
 					NewData+= '"'+key+'":"'+self.MainData[key]+'",'
 			# delete extra ","
@@ -82,14 +81,14 @@ class ChatRob:
 
 #create ChatRob
 T = ChatRob()
-T.All()
+#T.All()
 #T.Learn('{"你好":"你好"}')
 #T.All()
 T.Learn('{"北七13":"吃屎"}')
 T.All()
 #T.Learn('{"乖乖":"閉嘴"}')
 #T.All()
-#T.listen()
+T.listen()
 
 
  
