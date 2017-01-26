@@ -25,12 +25,12 @@ def compare(a,b,alert=0):#len(a)>(b)
 
 	###
 	CommonNum=0
-	for p1w in a:
-		for p2w in b:
-			if p1w==p2w: CommonNum+=1
+	for bi in range(len(b)):
+		for ai in range(len(a)):
+			if a[ai]==b[bi]: CommonNum+=1
 	
 	CommonRate=1-float(CommonNum)/len(a)
-	R2 = 1-CommonRate #2	
+	R2 = 1-CommonRate #2
 	if alert:
 		print "#2 CommonRate% :",R2	
 	###
@@ -42,7 +42,7 @@ def compare(a,b,alert=0):#len(a)>(b)
 				CommonTextCommonPosition+=1
 		except:
 			CommonTextCommonPosition = CommonTextCommonPosition
-	R3 = float(CommonTextCommonPosition)/len(b) #3	
+	R3 = float(CommonTextCommonPosition)/len(b) #3
 	if alert:
 		print "#3 diff:",R3
 
@@ -59,10 +59,17 @@ def compare(a,b,alert=0):#len(a)>(b)
 		print "#4 diff:",R4
 	###
 	###
-	print "相似度",(R1+R2+R3+R4)/4*100,"%"
-	return R1,R2,R3,R4
+	global BestWeight
+	if alert:
+		print "相似度",(R1*BestWeight[0]+R2*BestWeight[1]+R3*BestWeight[2]+R4*BestWeight[3])/(BestWeight[0]+BestWeight[1]+BestWeight[2]+BestWeight[3])*100,"%"
 	
-		
+	return R1,R2,R3,R4
+	#5 commontext
+	#6 ***base on 字詞重要性
+	#6-1 length
+	#6-2 CommonWord
+	#6-3 CommonPosition
+	#6-4 commontext		
 
 def AdjestWeight(t,w):
 	
@@ -70,13 +77,13 @@ def AdjestWeight(t,w):
 	for i in t:
 		NewData.append((i[0]*w[0]+i[1]*w[1]+i[2]*w[2]+i[3]*w[3])/(w[0]+w[1]+w[2]+w[3]))
 	#print NewData[0],NewData[1],NewData[2],NewData[3],NewData[4]
-	print (NewData[0]+NewData[1]-NewData[2]-NewData[3]-NewData[4])*100/2
+	#print (NewData[0]+NewData[1]-NewData[2]-NewData[3]-NewData[4])*100/2
 	return (NewData[0]+NewData[1]-NewData[2]-NewData[3]-NewData[4])*100/2
 
 
 
 
-def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0):
+def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0,alert=0):
 	s = AdjestWeight(CommonArray,WeightArray)
 
 	NewWeightArray_1=[WeightArray[0]+1,WeightArray[1],WeightArray[2],WeightArray[3]]
@@ -105,10 +112,10 @@ def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0):
 	if a4>a3 and a4>s:
 		Best = ["a4",a4]
 		WeightArray = NewWeightArray_4
-
-	print Best[0],"score: ",Best[1]
-	print WeightArray[0],WeightArray[1],WeightArray[2],WeightArray[3]
-	print i 
+	if alert:
+		print Best[0],"score: ",Best[1]
+		print WeightArray[0],WeightArray[1],WeightArray[2],WeightArray[3]
+		print i 
 	if i<10:
 		CompareComputer(CommonArray,WeightArray,i+1)
 	else:
@@ -116,10 +123,7 @@ def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0):
 		BestWeight = WeightArray
 
 
-#p = Sentence2WordArray("等等想要去吃點什麼嗎")安安你好今天的天氣真差
-#for i in p: print i
 
-#p1 = Sentence2WordArray()
 
 global BestWeight
 BestWeight = [1,1,1,1]
@@ -141,20 +145,34 @@ def training(SentenceList):
 	CompareComputer(CommonArray,BestWeight)
 
 	print BestWeight
+
 ##################train 1
+
 SentenceList=["安安你好今天的天氣真差","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿","最近天氣真好阿","你好等等想要去吃點什麼嗎"]
 training(SentenceList)
+
+
 ##################train 2
+
+
 SentenceList=["最近心情不太好","最近心情不太好","最近心情不是太好","最近天氣真差阿","最近天氣真好阿","你好等等想要去吃點什麼嗎"]
 training(SentenceList)
+
+
 ##################train 3
 SentenceList=["最近心情不太好","心情不太好耶","最近心情感覺到不是太好","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿"]
 training(SentenceList)
 
 
 
+##################train 4
+SentenceList=["肚子餓","現在肚子餓","肚子餓了","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿"]
+training(SentenceList)
 
-
+##test two sentence
+compare(Sentence2WordArray("安安你好今天的天氣真差"),Sentence2WordArray("你好今天天氣真差"),1)
+compare(Sentence2WordArray("今天的天氣真差"),Sentence2WordArray("天氣真差"),1)
+compare(Sentence2WordArray("你好今天的天氣真差"),Sentence2WordArray("天氣差"),1)
 
 
 
