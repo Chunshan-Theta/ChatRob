@@ -10,18 +10,129 @@ def Sentence2WordArray(T="安安你好今天的天氣真差"):
 	return result
 
 
+def compare_Learn(a,b,alert=0):#len(a)>(b)
+	print "^"*40
+	ASentence = ""
+	BSentence = ""
+	for con in a:ASentence += con
+	for con in b:BSentence += con
+	print "原句：",ASentence,BSentence
+
+	R1,R2,R3,R4 = compare(a,b,alert)
+	global BestWeight
+	CommonRate = (R1*BestWeight[0]+R2*BestWeight[1]+R3*BestWeight[2]+R4*BestWeight[3])/(BestWeight[0]+BestWeight[1]+BestWeight[2]+BestWeight[3])*100
+	
+	
+	
+	
+	#print ExeNum*"->","相似度",CommonRate,"%"
+	if CommonRate>70 :
+		TrainedContent = open("data.txt","r").read()
+		#print TrainedContent
+		TrainDataFile=open("data.txt","w")
+	
+		NewText = TrainedContent
+		
+		for con_a in a:
+			tooken = 0
+			for con_b in b:
+				if con_a==con_b:tooken=1
+				if con_b in con_a or con_a in con_b:tooken=1
+				if alert:
+					print con_a,con_b,tooken
+			if tooken==0 and len(con_a)<3:
+				NewText+=","
+				NewText+=con_a.encode("utf-8")
+				print "delete: ",con_a.encode("utf-8")
+		for con_b in b:
+			tooken = 0
+			for con_a in a:
+				if con_a==con_b:tooken=1
+				if con_b in con_a or con_a in con_b:tooken=1
+				if alert:
+					print con_a,con_b,tooken
+			if tooken==0 and len(con_b)<3:
+				NewText+=","
+				NewText+=con_b.encode("utf-8")
+				if alert:
+					print "delete: ",con_b.encode("utf-8")
+		TrainDataFile.write(NewText.strip("\n\r"))
+		TrainDataFile.close()
+	#print ASentence,BSentence
+
+	return R1,R2,R3,R4
+
+def compare_Sentence(a,b,alert=0,ExeNum=1):#len(a)>(b)
+	
+	ASentence = ""
+	BSentence = ""
+	for con in a:ASentence += con
+	for con in b:BSentence += con
+	if alert:
+		print "原句：",ASentence,BSentence
+
+	R1,R2,R3,R4 = compare(a,b,alert)
+	global BestWeight
+	CommonRate = (R1*BestWeight[0]+R2*BestWeight[1]+R3*BestWeight[2]+R4*BestWeight[3])/(BestWeight[0]+BestWeight[1]+BestWeight[2]+BestWeight[3])*100
+	
+	
+	
+	
+	if ExeNum >4:
+		if alert:
+			print ASentence,BSentence,ExeNum*"->","相似度",CommonRate,"%"		
+			print ASentence,BSentence
+		return CommonRate
+	#if len(ASentence)<5 or len(BSentence)<5:
+	#	print ASentence,BSentence,ExeNum*"->","相似度",CommonRate,"%"
+	#	return R1,R2,R3,R4
+	if CommonRate < 70:
+		
+		TrainedContent = open("data.txt","r").read().split(",")
+		if alert:
+			print "TrainedContent: ",TrainedContent
+		New_a=ASentence.encode("utf-8")
+		New_b=BSentence.encode("utf-8")
+		#print ASentence,BSentence
+		for con in TrainedContent:
+			con = unicode(con,"utf-8")
+			if con in ASentence and len(New_a)>5:
+				New_a =  ASentence.encode("utf-8").replace(con.encode("utf-8"),"")
+			if con in BSentence and len(New_b)>5:
+				New_b =  BSentence.encode("utf-8").replace(con.encode("utf-8"),"")
+		#print ASentence,BSentence
+		if alert:
+			print ASentence,BSentence,ExeNum*"->","相似度",CommonRate,"%"
+		#print ASentence,BSentence	
+		return compare_Sentence(Sentence2WordArray(New_a),Sentence2WordArray(New_b),alert,ExeNum+1)
+	if alert:
+		print ASentence,BSentence,ExeNum*"->","相似度",CommonRate,"%"
+	
+	
+	return CommonRate
 def compare(a,b,alert=0):#len(a)>(b)
 	
 	if len(a)<len(b):
 		c = a
 		a = b
 		b = c
+
+	ASentence = ""
+	BSentence = ""
+	for con in a:ASentence += con
+	for con in b:BSentence += con
 	############################################	
 	
-	lendef=abs(len(a)-len(b))
-	R1= 1-float(lendef)/len(a) #1
+	
+	CommonTextNum=0
+	for AContent in ASentence:
+		if AContent in BSentence:
+			CommonTextNum+=1
+	
+	CommonRate=1-float(CommonTextNum)/len(ASentence)
+	R1 = 1-CommonRate #1
 	if alert:
-		print "#1 lendef(n) :",R1
+		print "#1 CommonTextRate(n) :",R1
 
 	###
 	CommonNum=0
@@ -29,39 +140,40 @@ def compare(a,b,alert=0):#len(a)>(b)
 		for ai in range(len(a)):
 			if a[ai]==b[bi]: CommonNum+=1
 	
-	CommonRate=1-float(CommonNum)/len(a)
-	R2 = 1-CommonRate #2
+	CommonRate=float(CommonNum)/len(a)
+	R2 = CommonRate #2
 	if alert:
-		print "#2 CommonRate% :",R2	
+		print "#2 CommonWordRate% :",R2	
 	###
+	div_A = len(ASentence)/3+1
+	div_B = len(BSentence)/3+1
+	CommonTextNum_F=0
+	for AContent in ASentence[0:div_A]:
+		if AContent in BSentence[0:div_B]:
+			CommonTextNum_F+=1
+	R3 = CommonTextNum_F/len(ASentence[0:div_A]) 
+	if alert:
+		print "#R3 CommonTextRate_F(n) :",R3
+	
 
-	CommonTextCommonPosition = 1
-	for i in range(len(b)-1):
-		try:
-			if abs(int(a.index(b[i+1]))-int(a.index(b[i])))<=1:
-				CommonTextCommonPosition+=1
-		except:
-			CommonTextCommonPosition = CommonTextCommonPosition
-	R3 = float(CommonTextCommonPosition)/len(b) #3
-	if alert:
-		print "#3 diff:",R3
-
 	###
-	CommonTextCommonPosition2 = 1
-	for i in range(len(b)-1):
-		try:
-			if abs(int(a.index(b[i+1]))-int(a.index(b[i])))<=2:
-				CommonTextCommonPosition2+=1
-		except:
-			CommonTextCommonPosition2 = CommonTextCommonPosition2
-	R4 = float(CommonTextCommonPosition2)/len(b) #4	
+	div_B = len(BSentence)/3+1
+	div_A = len(ASentence)-div_B
+	
+	CommonTextNum_B=0
+	#print ASentence[div_A:len(ASentence)],BSentence[div_B:len(BSentence)]
+	#print len(ASentence[div_A:len(ASentence)])
+	for AContent in ASentence[div_A:len(ASentence)]:
+		if AContent in BSentence[div_B:len(BSentence)]:
+			CommonTextNum_B+=1
+	#print ":",CommonTextNum_B
+	#print ":",len(ASentence[div_A:len(ASentence)])
+	R4 = CommonTextNum_B/len(ASentence[div_A:len(ASentence)])  #4
+	#print "R4",R4
 	if alert:
-		print "#4 diff:",R4
+		print "#R4 CommonTextRate_B(n) :",R4
 	###
 	###
-	global BestWeight
-	if alert:
-		print "相似度",(R1*BestWeight[0]+R2*BestWeight[1]+R3*BestWeight[2]+R4*BestWeight[3])/(BestWeight[0]+BestWeight[1]+BestWeight[2]+BestWeight[3])*100,"%"
 	
 	return R1,R2,R3,R4
 	#5 commontext
@@ -70,7 +182,6 @@ def compare(a,b,alert=0):#len(a)>(b)
 	#6-2 CommonWord
 	#6-3 CommonPosition
 	#6-4 commontext		
-
 def AdjestWeight(t,w):
 	
 	NewData=[]
@@ -78,12 +189,15 @@ def AdjestWeight(t,w):
 		NewData.append((i[0]*w[0]+i[1]*w[1]+i[2]*w[2]+i[3]*w[3])/(w[0]+w[1]+w[2]+w[3]))
 	#print NewData[0],NewData[1],NewData[2],NewData[3],NewData[4]
 	#print (NewData[0]+NewData[1]-NewData[2]-NewData[3]-NewData[4])*100/2
-	return (NewData[0]+NewData[1]-NewData[2]-NewData[3]-NewData[4])*100/2
+	sorce = 0
+	for SorceOfCompution in NewData:sorce+=SorceOfCompution
+	sorce = sorce/len(NewData)*100
+	return sorce
 
 
 
 
-def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0,alert=0):
+def CompareComputer(CommonArray,WeightArray,alert=0):
 	s = AdjestWeight(CommonArray,WeightArray)
 
 	NewWeightArray_1=[WeightArray[0]+1,WeightArray[1],WeightArray[2],WeightArray[3]]
@@ -116,64 +230,80 @@ def CompareComputer(CommonArray,WeightArray=[1,1,1,1],i=0,alert=0):
 		print Best[0],"score: ",Best[1]
 		print WeightArray[0],WeightArray[1],WeightArray[2],WeightArray[3]
 		print i 
-	if i<10:
-		CompareComputer(CommonArray,WeightArray,i+1)
-	else:
-		global BestWeight
-		BestWeight = WeightArray
+	
+	global BestWeight
+	BestWeight = WeightArray
+	TrainDataFile=open("BestWeight.txt","w")
+	BestWeightText=""
+	for weight in BestWeight:
+		BestWeightText+=str(weight)+"\n"
+	TrainDataFile.write(BestWeightText)
 
 
 
 
-global BestWeight
-BestWeight = [1,1,1,1]
 
 
 def training(SentenceList):
 	for i in range(len(SentenceList)):
 		SentenceList[i] =Sentence2WordArray(SentenceList[i])
+	CommonArray=[]
+	for Common in SentenceList:
+		for i in range(len(SentenceList)):	
+			CommonArray.append(compare_Learn(SentenceList[i],Common))
+			
 
-
-	Common_1 = compare(SentenceList[0],SentenceList[1])
-	Common_2 = compare(SentenceList[0],SentenceList[2]) 
-	Common_3 = compare(SentenceList[0],SentenceList[3])
-	Common_4 = compare(SentenceList[0],SentenceList[4])
-	Common_5 = compare(SentenceList[0],SentenceList[5])
-
-	CommonArray = [Common_1,Common_2,Common_3,Common_4,Common_5]
 	global BestWeight
 	CompareComputer(CommonArray,BestWeight)
 
 	print BestWeight
 
+
+
+BestWeightContent = open("BestWeight.txt","r").readlines()
+
+
+global BestWeight
+BestWeight = []
+for Weight in BestWeightContent:
+	BestWeight.append(int(Weight))
 ##################train 1
 
-SentenceList=["安安你好今天的天氣真差","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿","最近天氣真好阿","你好等等想要去吃點什麼嗎"]
-training(SentenceList)
+#SentenceList=["今天的天氣真差","天氣真差","天氣超級差的","最近的天氣真差"]
+#training(SentenceList)
+
 
 
 ##################train 2
 
 
-SentenceList=["最近心情不太好","最近心情不太好","最近心情不是太好","最近天氣真差阿","最近天氣真好阿","你好等等想要去吃點什麼嗎"]
-training(SentenceList)
+#SentenceList=["最近心情不太好","最近心情不太好"]
+#training(SentenceList)
 
 
 ##################train 3
-SentenceList=["最近心情不太好","心情不太好耶","最近心情感覺到不是太好","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿"]
-training(SentenceList)
+#SentenceList=["最近的心情不太好","心情不太好耶","最近心情不太好"]
+#training(SentenceList)
 
 
 
 ##################train 4
-SentenceList=["肚子餓","現在肚子餓","肚子餓了","安安你好今天的天氣真差","你好今天天氣真差","最近天氣真差阿"]
-training(SentenceList)
+#SentenceList=["肚子餓","現在肚子餓","肚子餓了","肚子有點餓了"]
+#training(SentenceList)
+
+##################train 5
+#SentenceList=["開心","真開心","超級開心的","今天超開心"]
+#training(SentenceList)
 
 ##test two sentence
-compare(Sentence2WordArray("安安你好今天的天氣真差"),Sentence2WordArray("你好今天天氣真差"),1)
-compare(Sentence2WordArray("今天的天氣真差"),Sentence2WordArray("天氣真差"),1)
-compare(Sentence2WordArray("你好今天的天氣真差"),Sentence2WordArray("天氣差"),1)
 
+print compare_Sentence(Sentence2WordArray("你好今天天氣真差"),Sentence2WordArray("你好今天天氣真差"))
+print compare_Sentence(Sentence2WordArray("安安你好今天的天氣真差"),Sentence2WordArray("你好今天天氣真差"))
+print compare_Sentence(Sentence2WordArray("今天的天氣真差"),Sentence2WordArray("天氣真差"))
+print compare_Sentence(Sentence2WordArray("你好今天的天氣真差"),Sentence2WordArray("天氣差"))
+print compare_Sentence(Sentence2WordArray("超級開心的"),Sentence2WordArray("真開心"))
+print compare_Sentence(Sentence2WordArray("今天的天氣真差"),Sentence2WordArray("今天的天氣真好"))
+print compare_Sentence(Sentence2WordArray("現在肚子餓"),Sentence2WordArray("今天的天氣真差"))
 
 
 
